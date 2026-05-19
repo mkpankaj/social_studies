@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(venv/Scripts/python.exe -m py_compile gemini.py)",
+      "Bash(venv/Scripts/python.exe -m py_compile ingest.py)"
+    ]
+  }
+}

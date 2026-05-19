@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Andika&display=swap');
+@import "tailwindcss";
+
+html {
+  font-size: 125%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Andika', sans-serif;
+  background: #efefef;
+}
+
+#root {
+  min-height: 100vh;
+}
