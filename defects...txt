@@ -1,0 +1,41 @@
+ 1. EventSource auto-reconnects on any network hiccup → fires a second GET /api/refresh → two concurrent run() calls process the same chapters simultaneously → race
+  condition where one run's 'in_progress' write or failure overwrites the other run's 'success' (this explains doc_01 step3 going from success → failed between
+  screenshots 2 and 3)
+  2. Stale 'in_progress' state from a crashed previous run → on next Refresh, in_progress != success → step1 re-runs even for docs that had OCR done (this explains doc_03
+   step1 showing in_progress spinner in screenshots 4 & 5)
+
+
+1. load images of text book pages. The text book has multiple chapters on different topics. Total pages are 50-60
+2. extract raw content from the pages and store in database. It will be good to extract the content and save in database by Chapter and sections as it is in textbook.
+3. build hierarchical document structure using PageIndex by Chapter.
+4. Create Summary and Quiz for each chapter. For ex: if text book has 10 chapters then create summary and quiz for all 10 chapters.
+5. Show all the Chapter Name on Homepage of UI.
+6. User can click the Chapter Name to open new page with Summary. On that page there is Ask AI Assistant search bar. User can enter a question to ask. Application will use vectorless rag to search relevant answers from the contents of respective chapter.
+7. On this page, there is button for Take Quiz. user can click Take Quiz to open new page with quiz questions.  
+
+
+Defects
+
+1. Homepage 
+	- Change Refresh to Load Doc
+	- Click on Load Doc to open the page File Upload Status
+	- Remove button "Refresh" from Homepage
+	- Remove text "8 Chapters Loaded". Not required to display on homepage
+	- Chapter Name should be shown clickable when user hovers the mouse over the Chapter name
+
+2. File Upload Status 
+	- when new docs are loaded, append details to existing table. Do not overwrite
+	- status "failed" should be clickable. When user clicks, it will show the error
+	- make Home icon more prominent
+
+3.  Chapter Page
+	- Increase length of Summary of Chapters to 10 sentences
+	- Change Home icon to Return icon <--- to previous page
+	- Ask AI Assistant - taking lot of time to answer. Optimize the search from database. Sometimes it doesn't work..
+
+4. 
+
+
+Type		Name			Value
+CNAME 	@ 				dukkszj8.up.railway.app
+TXT		_railway-verify		railway-verify=fd6c7aa8cd526bfe868ae9f6c0d13d6e3ebfd6a8b481a9cd3f343b245110d500
