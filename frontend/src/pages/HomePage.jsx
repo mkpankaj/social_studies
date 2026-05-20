@@ -1,23 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RefreshCw, AlertCircle, ClipboardList } from 'lucide-react'
+import { Upload, AlertCircle } from 'lucide-react'
 import { getChapters } from '../api'
 import Spinner from '../components/Spinner'
-
-const STEPS = [
-  'Loading files...',
-  'Extracting content...',
-  'Creating summaries...',
-]
 
 export default function HomePage() {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [refreshing, setRefreshing] = useState(false)
-  const [refreshError, setRefreshError] = useState('')
-  const [step, setStep] = useState(0)
-  const [stepMsg, setStepMsg] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -27,127 +17,22 @@ export default function HomePage() {
       .finally(() => setLoading(false))
   }, [])
 
-  function handleRefresh() {
-    setRefreshing(true)
-    setRefreshError('')
-    setStep(0)
-    setStepMsg('Connecting...')
-
-    const es = new EventSource('/api/refresh')
-
-    es.onmessage = (e) => {
-      const data = JSON.parse(e.data)
-
-      if (data.done) {
-        es.close()
-        getChapters().then(setChapters).finally(() => {
-          setRefreshing(false)
-          setStep(0)
-          setStepMsg('')
-        })
-        return
-      }
-
-      if (data.step === 'error') {
-        setStepMsg(`Error in ${data.stage} for ${data.file}: ${data.error}`)
-      } else if (data.step === 'ocr') {
-        setStep(1)
-        setStepMsg(`Step 1: ${STEPS[0]} — ${data.file ?? ''} (${data.total ?? ''} pages)`)
-      } else if (data.step === 'index') {
-        setStep(2)
-        setStepMsg(`Step 2: ${STEPS[1]} — ${data.file ?? ''}`)
-      } else if (data.step === 'summary') {
-        setStep(3)
-        setStepMsg(`Step 3: ${STEPS[2]} — ${data.file ?? ''}`)
-      } else if (data.step === 'done_file') {
-        setStepMsg(`Done: ${data.file}`)
-      } else if (data.current_step === 2) {
-        setStep(2)
-        setStepMsg(`Step 2: ${STEPS[1]}`)
-      } else if (data.current_step === 3) {
-        setStep(3)
-        setStepMsg(`Step 3: ${STEPS[2]}`)
-      }
-    }
-
-    es.onerror = () => {
-      es.close()
-      setRefreshing(false)
-      setStep(0)
-      setStepMsg('')
-      setRefreshError('Refresh failed. Check that the backend is running and try again.')
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#EFEFEF]">
-      {/* Header */}
-      <header className="bg-white text-[#2D2D2D] text-center py-3 px-4 shadow-sm">
-        <h1 className="text-xl font-bold">Social Studies – Table of Contents</h1>
-      </header>
-
-      {/* Refresh bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white border-b border-gray-100">
-        <span className="text-sm text-[#888888]">
-          {loading ? '' : chapters.length > 0
-            ? `${chapters.length} chapter${chapters.length !== 1 ? 's' : ''} loaded`
-            : 'No chapters loaded yet'}
-        </span>
-        <div className="flex items-center gap-2">
+      {/* Header — gradient with Load Doc inline */}
+      <header className="bg-gradient-to-r from-[#E8725A] via-[#F0A050] to-[#5BC8C0] text-white px-4 shadow-md flex items-center min-h-[60px] gap-3">
+        <div className="flex-1" />
+        <h1 className="text-xl font-bold tracking-wide text-center">Social Studies – Table of Contents</h1>
+        <div className="flex-1 flex justify-end">
           <button
             onClick={() => navigate('/status')}
-            className="flex items-center gap-1.5 border border-[#E8725A] hover:bg-[#FEF0ED] text-[#E8725A] text-sm font-medium px-3 py-2 rounded-xl"
+            className="flex items-center gap-1.5 bg-white/20 hover:bg-white/35 border border-white/40 text-white text-sm font-medium px-3 py-1.5 rounded-xl transition-colors shrink-0"
           >
-            <ClipboardList size={14} />
-            Status
-          </button>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 bg-[#E8725A] hover:bg-[#D4614A] disabled:bg-[#F0B8AE] text-white text-sm font-medium px-4 py-2 rounded-xl"
-          >
-            {refreshing
-              ? <Spinner size={14} />
-              : <RefreshCw size={14} />}
-            {refreshing ? 'Refreshing...' : 'Refresh'}
+            <Upload size={13} />
+            Load Doc
           </button>
         </div>
-      </div>
-
-      {/* Progress indicator */}
-      {refreshing && (
-        <div className="bg-[#FEF6F4] border-b border-[#F0C8BF] px-4 sm:px-6 py-3">
-          <div className="flex flex-wrap gap-4 sm:gap-6 mb-2">
-            {STEPS.map((label, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-sm">
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                    step > i + 1
-                      ? 'bg-[#5BC8C0] text-white'
-                      : step === i + 1
-                      ? 'bg-[#E8725A] text-white'
-                      : 'bg-gray-200 text-[#888888]'
-                  }`}
-                >
-                  {step > i + 1 ? '✓' : i + 1}
-                </span>
-                <span className={step >= i + 1 ? 'text-[#2D2D2D] font-medium' : 'text-[#888888]'}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-          {stepMsg && <p className="text-xs text-[#E8725A] break-words">{stepMsg}</p>}
-        </div>
-      )}
-
-      {/* Refresh error */}
-      {refreshError && (
-        <div className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-red-50 border-b border-red-200 text-red-600 text-sm">
-          <AlertCircle size={16} className="shrink-0" />
-          {refreshError}
-        </div>
-      )}
+      </header>
 
       {/* Chapter list */}
       <main className="px-4 sm:px-6 py-4 max-w-2xl mx-auto">
@@ -163,7 +48,7 @@ export default function HomePage() {
           </div>
         ) : chapters.length === 0 ? (
           <p className="text-[#888888] text-sm mt-4">
-            No chapters loaded. Click <strong>Refresh</strong> to import the PDF content.
+            No chapters loaded. Click <strong>Load Doc</strong> to import the PDF content.
           </p>
         ) : (
           <ol className="mt-3 space-y-3">
@@ -171,12 +56,14 @@ export default function HomePage() {
               <li key={ch.id}>
                 <button
                   onClick={() => navigate(`/chapter/${ch.id}`)}
-                  className="w-full flex items-center gap-4 bg-white rounded-2xl shadow-sm px-5 py-4 hover:shadow-md transition-shadow text-left"
+                  className="w-full flex items-center gap-4 bg-white rounded-2xl shadow-sm px-5 py-4 hover:shadow-md transition-all group text-left"
                 >
                   <span className="w-8 h-8 rounded-full bg-[#E8725A] text-white flex items-center justify-center text-sm font-bold shrink-0">
                     {i + 1}
                   </span>
-                  <span className="text-[#2D2D2D] font-medium">{ch.chapter_name}</span>
+                  <span className="text-[#2D2D2D] font-medium group-hover:text-[#E8725A] group-hover:underline transition-colors cursor-pointer">
+                    {ch.chapter_name}
+                  </span>
                 </button>
               </li>
             ))}

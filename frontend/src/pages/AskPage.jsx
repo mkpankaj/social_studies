@@ -144,12 +144,12 @@ export default function AskPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a follow-up question..."
-          className="flex-1 border border-gray-200 rounded-xl px-3 py-1.5 text-sm outline-none focus:border-[#E8725A]"
+          className="flex-1 border-2 border-[#E8725A]/40 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#E8725A] focus:ring-2 focus:ring-[#E8725A]/20 bg-[#FEF6F4] placeholder-[#B0907E] transition-all"
         />
         <button
           type="submit"
           disabled={!input.trim() || submitting}
-          className="bg-[#E8725A] hover:bg-[#D4614A] disabled:bg-gray-200 text-white rounded-xl p-1.5"
+          className="bg-[#E8725A] hover:bg-[#D4614A] disabled:bg-[#C4A39B] text-white rounded-xl p-1.5 transition-colors"
         >
           <Send size={16} />
         </button>

@@ -84,12 +84,12 @@ export default function StatusPage() {
   return (
     <div className="min-h-screen bg-[#EFEFEF]">
       {/* Header */}
-      <header className="bg-white text-[#2D2D2D] py-3 px-4 flex items-center gap-3 shadow-sm">
-        <button onClick={() => navigate('/')} className="text-[#888888] hover:text-[#E8725A]">
+      <header className="bg-gradient-to-r from-[#5BC8C0] via-[#6BA3D6] to-[#E8725A] text-white px-4 flex items-center gap-3 shadow-md min-h-[72px]">
+        <button onClick={() => navigate('/')} className="text-white/80 hover:text-white">
           <Home size={18} />
         </button>
         <h1 className="flex-1 text-center text-xl font-bold">File Upload Status</h1>
-        {anyBusy && <Spinner size={16} className="text-[#E8725A]" />}
+        {anyBusy && <Spinner size={16} />}
       </header>
 
       <main className="px-4 sm:px-6 py-6 max-w-4xl mx-auto">

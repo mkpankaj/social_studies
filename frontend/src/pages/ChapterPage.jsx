@@ -30,11 +30,14 @@ export default function ChapterPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#EFEFEF]">
       {/* Header */}
-      <header className="bg-white text-[#2D2D2D] flex items-center px-4 py-3 shadow-sm">
-        <button onClick={() => navigate('/')} className="text-[#888888] hover:text-[#2D2D2D]">
+      <header className="bg-gradient-to-r from-[#E8725A] to-[#F0A050] text-white flex items-center px-4 shadow-md min-h-[60px]">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 transition-colors shrink-0"
+        >
           <Home size={20} />
         </button>
-        <h1 className="flex-1 text-center text-xl font-bold pr-6">
+        <h1 className="flex-1 text-center text-xl font-bold pr-9">
           {loading ? '...' : chapter?.chapter_name ?? 'Chapter'}
         </h1>
       </header>
@@ -98,12 +101,12 @@ export default function ChapterPage() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask a question about this chapter..."
-          className="flex-1 border border-gray-200 rounded-xl px-3 py-1.5 text-sm outline-none focus:border-[#E8725A]"
+          className="flex-1 border-2 border-[#E8725A]/40 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#E8725A] focus:ring-2 focus:ring-[#E8725A]/20 bg-[#FEF6F4] placeholder-[#B0907E] transition-all"
         />
         <button
           type="submit"
           disabled={!question.trim()}
-          className="bg-[#E8725A] hover:bg-[#D4614A] disabled:bg-gray-200 text-white rounded-xl p-1.5"
+          className="bg-[#E8725A] hover:bg-[#D4614A] disabled:bg-[#C4A39B] text-white rounded-xl p-1.5 transition-colors"
         >
           <Send size={16} />
         </button>

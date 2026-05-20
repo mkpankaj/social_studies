@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Home } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { getChapter, pdfUrl } from '../api'
 import Spinner from '../components/Spinner'
 
@@ -17,11 +17,14 @@ export default function ReadPage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white text-[#2D2D2D] flex items-center px-4 py-3 shrink-0 shadow-sm">
-        <button onClick={() => navigate(`/chapter/${id}`)} className="text-[#888888] hover:text-[#2D2D2D]">
-          <Home size={20} />
+      <header className="bg-gradient-to-r from-[#E8725A] to-[#F0A050] text-white flex items-center px-4 shrink-0 shadow-md min-h-[60px]">
+        <button
+          onClick={() => navigate(`/chapter/${id}`)}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 transition-colors shrink-0"
+        >
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="flex-1 text-center text-xl font-bold pr-6">
+        <h1 className="flex-1 text-center text-xl font-bold pr-9">
           {chapterName || '...'}
         </h1>
       </header>
