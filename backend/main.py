@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from database import init_db, get_conn
+from database import init_db, get_conn, cache_lookup, cache_store
 import ingest
 import gemini as ai
 
@@ -180,6 +180,11 @@ class AskRequest(BaseModel):
 
 @app.post("/api/ask")
 async def ask(req: AskRequest):
+    # Always check cache first — persists across sessions
+    cached = cache_lookup(req.question, req.chapter_id)
+    if cached:
+        return cached
+
     with get_conn() as conn:
         if req.chapter_id:
             rows = conn.execute(
@@ -196,4 +201,9 @@ async def ask(req: AskRequest):
         raise HTTPException(status_code=404, detail="No chapters loaded yet. Please refresh first.")
 
     result = await ai.ask_with_rag(req.question, chapters, req.history)
+
+    # Store in cache only for standalone questions (not mid-conversation)
+    if not req.history:
+        cache_store(req.question, req.chapter_id, result)
+
     return result

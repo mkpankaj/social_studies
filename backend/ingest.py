@@ -181,6 +181,7 @@ async def _step3_for_doc(filename: str):
             await asyncio.sleep(3)
             quiz = await ai.generate_quiz(page_index)
             db.update_chapter_step3(filename, ch_num, summary, json.dumps(quiz), "success")
+            db.cache_invalidate_chapter(chapter["id"])
         except Exception as e:
             db.update_chapter_step3(filename, ch_num, None, None, "failed", str(e))
 

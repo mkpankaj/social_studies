@@ -1,5 +1,8 @@
 import sqlite3
 import os
+import re
+import json
+import hashlib
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "social_studies.db")
 
@@ -25,6 +28,17 @@ def init_db():
                 step3_status     TEXT,
                 step3_error      TEXT,
                 loaded_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS query_cache (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                chapter_id    INTEGER,
+                query_hash    TEXT NOT NULL,
+                query_norm    TEXT NOT NULL,
+                response_json TEXT NOT NULL,
+                hit_count     INTEGER DEFAULT 0,
+                created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
         conn.execute("""
@@ -104,6 +118,73 @@ def _reaggregate_all_docs():
         filenames = [r[0] for r in conn.execute("SELECT filename FROM documents").fetchall()]
     for fn in filenames:
         aggregate_doc_status(fn)
+
+
+def _normalize_query(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r"[^\w\s]", "", text)
+    return re.sub(r"\s+", " ", text)
+
+
+def _jaccard(a: set, b: set) -> float:
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+SIMILARITY_THRESHOLD = 0.75
+
+
+def cache_lookup(question: str, chapter_id) -> dict | None:
+    norm = _normalize_query(question)
+    query_hash = hashlib.md5(f"{norm}|{chapter_id}".encode()).hexdigest()
+
+    with get_conn() as conn:
+        # Exact match first (hash lookup — O(1))
+        row = conn.execute(
+            "SELECT id, response_json FROM query_cache WHERE query_hash = ?",
+            (query_hash,)
+        ).fetchone()
+        if row:
+            conn.execute("UPDATE query_cache SET hit_count = hit_count + 1 WHERE id = ?", (row["id"],))
+            return json.loads(row["response_json"])
+
+        # Similarity scan against same scope (chapter_id match)
+        rows = conn.execute(
+            "SELECT id, query_norm, response_json FROM query_cache WHERE chapter_id IS ? ORDER BY created_at DESC LIMIT 200",
+            (chapter_id,)
+        ).fetchall()
+
+    norm_words = set(norm.split())
+    best_score, best_row = 0.0, None
+    for r in rows:
+        score = _jaccard(norm_words, set(r["query_norm"].split()))
+        if score > best_score:
+            best_score, best_row = score, r
+
+    if best_score >= SIMILARITY_THRESHOLD:
+        with get_conn() as conn:
+            conn.execute("UPDATE query_cache SET hit_count = hit_count + 1 WHERE id = ?", (best_row["id"],))
+        return json.loads(best_row["response_json"])
+
+    return None
+
+
+def cache_store(question: str, chapter_id, response: dict):
+    norm = _normalize_query(question)
+    query_hash = hashlib.md5(f"{norm}|{chapter_id}".encode()).hexdigest()
+    with get_conn() as conn:
+        conn.execute("""
+            INSERT OR IGNORE INTO query_cache (chapter_id, query_hash, query_norm, response_json)
+            VALUES (?, ?, ?, ?)
+        """, (chapter_id, query_hash, norm, json.dumps(response)))
+
+
+def cache_invalidate_chapter(chapter_id: int):
+    """Delete cache entries for this chapter and all global (cross-chapter) entries."""
+    with get_conn() as conn:
+        conn.execute("DELETE FROM query_cache WHERE chapter_id = ?", (chapter_id,))
+        conn.execute("DELETE FROM query_cache WHERE chapter_id IS NULL")
 
 
 def aggregate_doc_status(doc_filename: str):
