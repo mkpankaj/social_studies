@@ -205,7 +205,10 @@ async def ask(req: AskRequest):
     if not chapters:
         raise HTTPException(status_code=404, detail="No chapters loaded yet. Please refresh first.")
 
-    result = await ai.ask_with_rag(req.question, chapters, req.history)
+    try:
+        result = await ai.ask_with_rag(req.question, chapters, req.history)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
     # Store in cache only for standalone questions (not mid-conversation)
     if not req.history:
