@@ -222,3 +222,7 @@ if os.path.isdir(FRONTEND_DIST):
         if full_path and os.path.isfile(file_path):
             return FileResponse(file_path)
         return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+else:
+    @app.get("/")
+    async def serve_root():
+        raise HTTPException(status_code=503, detail=f"Frontend not built. dist not found at: {FRONTEND_DIST}")
