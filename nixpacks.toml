@@ -13,4 +13,4 @@ cmds = [
 cmds = ["npm --prefix frontend run build"]
 
 [start]
-cmd = "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
+cmd = "cd /app/backend && uvicorn main:app --host 0.0.0.0 --port $PORT"

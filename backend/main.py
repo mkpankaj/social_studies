@@ -211,7 +211,11 @@ async def ask(req: AskRequest):
 
 # ── Serve React frontend (production) ────────────────────────────────────────
 
-FRONTEND_DIST = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+# Try backend/../frontend/dist (normal), fall back to ./frontend/dist (if __file__ resolves to repo root)
+_here = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIST = os.path.join(_here, "..", "frontend", "dist")
+if not os.path.isdir(FRONTEND_DIST):
+    FRONTEND_DIST = os.path.join(_here, "frontend", "dist")
 
 if os.path.isdir(FRONTEND_DIST):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
