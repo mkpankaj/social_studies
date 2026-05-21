@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install *)",
       "Bash(venv/Scripts/python.exe -m py_compile gemini.py)",
-      "Bash(venv/Scripts/python.exe -m py_compile ingest.py)"
+      "Bash(venv/Scripts/python.exe -m py_compile ingest.py)",
+      "Bash(python3 -c \"import os; _here = os.path.dirname\\(os.path.abspath\\('main.py'\\)\\); print\\('_here:', _here\\); FRONTEND_DIST = os.path.join\\(_here, '..', 'frontend', 'dist'\\); print\\('FRONTEND_DIST:', FRONTEND_DIST\\); print\\('exists:', os.path.isdir\\(FRONTEND_DIST\\)\\)\")"
     ]
   }
 }
