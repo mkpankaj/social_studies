@@ -24,7 +24,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CONTENT_DIR = os.path.join(os.path.dirname(__file__), "..", "docs", "content")
+_here = os.path.dirname(os.path.abspath(__file__))
+CONTENT_DIR = (
+    os.path.join(_here, "content")
+    if os.path.isdir(os.path.join(_here, "content"))
+    else os.path.join(_here, "..", "docs", "content")
+)
 
 _refresh_lock = asyncio.Lock()
 
